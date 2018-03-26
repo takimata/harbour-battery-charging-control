@@ -11,16 +11,16 @@ ControllerModel::ControllerModel(QObject *parent) :
 
     // see https://git.merproject.org/mer-core/statefs-providers/blob/master/src/power_udev/provider_power_udev.cpp
     batteryLevel(new ContextProperty("Battery.ChargePercentage", this)),      // x \in [0, 100]
-    runningOnBattery(new ContextProperty("Battery.OnBattery", this)),         // 1 while on battery, 0 with external power source
     chargingStateMonitor(new ContextProperty("Battery.ChargingState", this)), // x \in {unknown, charging, discharging, idle}
+    chargerType(new ContextProperty("Battery.ChargerType", this)),            // x \in {usb, dcp, hvdcp, cdp, unknown, "" -> absent}
     chargeActivity(this),
     settings(QSettings::UserScope, QCoreApplication::applicationName(), QCoreApplication::applicationName(), this) {
 
     readSettings();
 
     connect(batteryLevel, SIGNAL(valueChanged()), this, SLOT(handleBatteryLevelChange()));
-    connect(runningOnBattery, SIGNAL(valueChanged()), this, SLOT(handlePowerSupplyPresentChange()));
     connect(chargingStateMonitor, SIGNAL(valueChanged()), this, SLOT(handleIsChargingChanged()));
+    connect(chargerType, SIGNAL(valueChanged()), this, SLOT(handlePowerSupplyPresentChange()));
 
     chargeActivity.setWakeupFrequency(BackgroundActivity::TenMinutes);
     connect(&chargeActivity, SIGNAL(running()), this, SLOT(backgroundActivity()));
@@ -28,6 +28,7 @@ ControllerModel::ControllerModel(QObject *parent) :
 
 int ControllerModel::enableCharging(bool enable) {
     qDebug() << "Charging enabled: " << enable;
+
     if (enable)
         return system((dataDir + "/helpers/enableCharging").toLatin1().data());
     else
@@ -67,7 +68,7 @@ void ControllerModel::applyChargingPolicy() {
 }
 
 void ControllerModel::handleIsChargingChanged() {
-
+    qDebug() << "Charging State: " << chargingStateMonitor->value().value<QString>();
     ChargingState newValue = chargingStateMapping.value(chargingStateMonitor->value().value<QString>(), ChargingState::Unknown);
 
     if (newValue != chargingState) {
@@ -81,12 +82,16 @@ void ControllerModel::handleBatteryLevelChange() {
 }
 
 void ControllerModel::handlePowerSupplyPresentChange() {
-    if (runningOnBattery->value().value<uint>() == 0) {
-        chargeActivity.stop();
-        applyChargingPolicy();
+    qDebug() << "Charger type: " << chargerType->value().value<QString>();
+
+    if (chargerType->value().value<QString>().isEmpty()) {
+        // empty charger type means no power source
+        chargeActivity.wait();
     }
     else {
-        chargeActivity.wait();
+
+        chargeActivity.stop();
+        applyChargingPolicy();
     }
     emit chargerConnectedChanged();
 }

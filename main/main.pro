@@ -36,6 +36,8 @@ LIBS += -lkeepalive
 
 QT += dbus
 
+CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
+
 #helperstuff.files += ../helpers/enableCharging/enableCharging ../helpers/disableCharging/disableCharging
 #helperstuff.path = /usr/share/$${TARGET}/helpers
 

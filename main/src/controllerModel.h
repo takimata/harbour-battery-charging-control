@@ -29,22 +29,22 @@ class ControllerModel : public QObject {
 
     private:
     enum ChargingState {Unknown, Charging, Discharging, Idle};
-    ChargingState chargingState = ChargingState::Unknown;
-
     QMap<QString, ChargingState> chargingStateMapping = {std::make_pair("unknown", ChargingState::Unknown),
                                                      std::make_pair("charging", ChargingState::Charging),
                                                      std::make_pair("discharging", ChargingState::Discharging),
                                                      std::make_pair("idle", ChargingState::Idle)};
 
-    ContextProperty *batteryLevel;
-    ContextProperty *runningOnBattery;
-    ContextProperty *chargingStateMonitor;
+    ChargingState chargingState = ChargingState::Unknown;
 
-    uint upperLimit = 70, currentValue = 0;
-    bool automaticMode = true;
+    ContextProperty *batteryLevel;
+    ContextProperty *chargingStateMonitor;
+    ContextProperty *chargerType;
 
     // https://git.merproject.org/mer-core/nemo-keepalive/blob/12a1528bacd20e0a07e9bbcbc287b08641986265/lib/backgroundactivity.h
     BackgroundActivity chargeActivity;
+
+    uint upperLimit = 70, currentValue = 0;
+    bool automaticMode = true;
 
     // is there a better way instead of hardcoding the path?
     QString dataDir = "/usr/share/" + QCoreApplication::applicationName();
@@ -77,7 +77,7 @@ class ControllerModel : public QObject {
     }
 
     bool isChargerConnected() {
-        return runningOnBattery->value().value<uint>() == 0;
+        return !chargerType->value().value<QString>().isEmpty();
     }
 
     bool getAutomaticMode() {
@@ -98,8 +98,8 @@ class ControllerModel : public QObject {
 
     ~ControllerModel() {
         delete batteryLevel;
-        delete runningOnBattery;
         delete chargingStateMonitor;
+        delete chargerType;
     }
 
     signals:

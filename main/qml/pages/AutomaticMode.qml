@@ -70,7 +70,7 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 horizontalAlignment: Text.AlignHCenter
                 text: qsTr("The external power source will continue to feed your device - only battery charging will be affected.")
-                visible: !cppModel.charging
+                visible: !cppModel.charging & cppModel.chargerConnected
             }
         }
     }

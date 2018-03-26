@@ -19,6 +19,7 @@ class ControllerModel : public QObject {
     Q_PROPERTY(uint currentValue READ getCurrentValue NOTIFY currentValueChanged)
     Q_PROPERTY(bool charging READ isCharging WRITE enableCharging NOTIFY isChargingChanged)
     Q_PROPERTY(bool automaticMode READ getAutomaticMode WRITE setAutomaticMode NOTIFY automaticModeChanged)
+    Q_PROPERTY(bool chargerConnected READ isChargerConnected NOTIFY chargerConnectedChanged)
 
     private slots:
     void handleBatteryLevelChange();
@@ -75,6 +76,10 @@ class ControllerModel : public QObject {
         return (chargingState == ChargingState::Charging);
     }
 
+    bool isChargerConnected() {
+        return runningOnBattery->value().value<uint>() == 0;
+    }
+
     bool getAutomaticMode() {
         return automaticMode;
     }
@@ -102,6 +107,7 @@ class ControllerModel : public QObject {
     void currentValueChanged();
     void isChargingChanged();
     void automaticModeChanged();
+    void chargerConnectedChanged();
 };
 
 #endif  // CONTROLLERMODEL_H

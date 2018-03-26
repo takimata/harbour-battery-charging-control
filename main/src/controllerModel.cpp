@@ -82,12 +82,13 @@ void ControllerModel::handleBatteryLevelChange() {
 
 void ControllerModel::handlePowerSupplyPresentChange() {
     if (runningOnBattery->value().value<uint>() == 0) {
-        chargeActivity.wait();
+        chargeActivity.stop();
         applyChargingPolicy();
     }
     else {
-        chargeActivity.stop();
+        chargeActivity.wait();
     }
+    emit chargerConnectedChanged();
 }
 
 void ControllerModel::setAutomaticMode(bool value) {

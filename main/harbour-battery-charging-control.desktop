@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-X-Nemo-Application-Type=silica-qt5
-Icon=harbour-battery-charging-control
-Exec=harbour-battery-charging-control
-Name=Charge control
-Name[de]=Ladekontrolle
